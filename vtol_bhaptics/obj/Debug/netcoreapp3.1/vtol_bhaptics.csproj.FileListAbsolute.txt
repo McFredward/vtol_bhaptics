@@ -1,0 +1,16 @@
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\bin\Debug\netcoreapp3.1\vtol_bhaptics.deps.json
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\bin\Debug\netcoreapp3.1\vtol_bhaptics.dll
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\bin\Debug\netcoreapp3.1\vtol_bhaptics.pdb
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\bin\Debug\netcoreapp3.1\Assembly-CSharp.dll
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\bin\Debug\netcoreapp3.1\MelonLoader.dll
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\bin\Debug\netcoreapp3.1\UnityEngine.dll
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\obj\Debug\netcoreapp3.1\vtol_bhaptics.csproj.AssemblyReference.cache
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\obj\Debug\netcoreapp3.1\vtol_bhaptics.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\obj\Debug\netcoreapp3.1\vtol_bhaptics.csproj.CoreCompileInputs.cache
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\obj\Debug\netcoreapp3.1\vtol_bhaptics.csproj.CopyComplete
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\obj\Debug\netcoreapp3.1\vtol_bhaptics.dll
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\obj\Debug\netcoreapp3.1\vtol_bhaptics.pdb
+C:\Users\Fredward\Documents\VTOL_bhaptics\vtol_bhaptics\bin\Debug\netcoreapp3.1\0Harmony.dll
+C:\Users\Fredward\Documents\VTOL_bhaptics\vtol_bhaptics\bin\Debug\netcoreapp3.1\UnityEngine.CoreModule.dll
+C:\Users\Fredward\Documents\VTOL_bhaptics\vtol_bhaptics\bin\Debug\netcoreapp3.1\UnityEngine.AudioModule.dll
+C:\Users\Fredward\Documents\VTOL_bhaptics\vtol_bhaptics\bin\Debug\netcoreapp3.1\UnityEngine.PhysicsModule.dll

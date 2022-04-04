@@ -1,0 +1,14 @@
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\obj\Debug\net5.0\vtol_bhaptics.csproj.AssemblyReference.cache
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\obj\Debug\net5.0\vtol_bhaptics.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\obj\Debug\net5.0\vtol_bhaptics.csproj.CoreCompileInputs.cache
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\bin\Debug\net5.0\vtol_bhaptics.deps.json
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\bin\Debug\net5.0\vtol_bhaptics.dll
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\bin\Debug\net5.0\vtol_bhaptics.pdb
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\bin\Debug\net5.0\Assembly-CSharp.dll
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\bin\Debug\net5.0\MelonLoader.dll
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\bin\Debug\net5.0\UnityEngine.dll
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\obj\Debug\net5.0\vtol_bhaptics.csproj.CopyComplete
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\obj\Debug\net5.0\vtol_bhaptics.dll
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\obj\Debug\net5.0\refint\vtol_bhaptics.dll
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\obj\Debug\net5.0\vtol_bhaptics.pdb
+C:\Users\Fredward\Documents\vtol_bhaptics\vtol_bhaptics\obj\Debug\net5.0\ref\vtol_bhaptics.dll
