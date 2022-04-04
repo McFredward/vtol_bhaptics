@@ -14,6 +14,9 @@
 * Run the game once so that MelonLoader can generate all necessary things.
 * Download the [release](https://github.com/McFredward/vtol_bhaptics/releases/tag/release) and extract the files into your VTOL VR folder.
 
+## Known Issues
+* DLC is currently not supported. Collisions are working but thrust works different for the helicopter. I will add this in the nearly future. All tested on game version 1.4.0.
+
 ## Credits
 Thanks to [Florian Fahrenberger](https://github.com/floh-bhaptics) for his templates and his help!
 
