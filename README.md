@@ -11,7 +11,7 @@
 ## How To Install
 
 * Download the MelonLoader and install in on VTOLVR.exe.
-* Run the game once so that MelonLoader can generate all necessary things.
+* Run the game once so that [MelonLoader](https://melonwiki.xyz/) can generate all necessary things.
 * Download the [release](https://github.com/McFredward/vtol_bhaptics/releases/tag/release) and extract the files into your VTOL VR folder.
 
 ## Credits
