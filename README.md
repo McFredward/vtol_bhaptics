@@ -11,7 +11,8 @@
 ## How To Install
 
 * Download the [VTOL Modloader](https://vtolvr-mods.com/) run it and download the necessary files.
-* Download the [release](https://github.com/McFredward/vtol_bhaptics/releases/tag/release) and extract the ``vtol_bhaptics`` folder into the ``\VTOL VR\VTOLVR_ModLoader\mods`` folder.
+* Download the [release](https://github.com/McFredward/vtol_bhaptics/releases/tag/nativeModLoaderRelease) and extract the ``vtol_bhaptics`` folder into the ``\VTOL VR\VTOLVR_ModLoader\mods`` folder.
+* Activate the mod through the Mod-Menu ingame.
 
 ## Known Issues
 * DLC is currently not supported. Collisions are working but thrust works different for the helicopter. I will add this in the near future. All tested on game version 1.4.0 and X40 Tactsuit.
