@@ -122,7 +122,7 @@ namespace MyBhapticsTactsuit
         void RegisterAllTactFiles()
         {
             // Get location of the compiled assembly and search through "Bhaptics.Tact" directory and contained patterns
-            string configPath = Directory.GetCurrentDirectory() + "\\VTOLVR_ModLoader\\mods\\vtol_bhaptics\\bHaptics";
+            string configPath = Directory.GetCurrentDirectory() + "\\VTOLVR_ModLoader\\mods\\Bhaptics integration\\bHaptics";
             DirectoryInfo d = new DirectoryInfo(configPath);
             FileInfo[] Files = d.GetFiles("*.tact", SearchOption.AllDirectories);
             for (int i = 0; i < Files.Length; i++)
