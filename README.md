@@ -4,13 +4,13 @@
 * Thrust of your vehicle
 * Ground acceleration and landing
 * Collisions with other objects or missiles
-* Hearth beat for Over-G dependend on how much G-Force
+* Hearth beat for Over-G dependend on G-Force magnitude
 * Carrier Hook
 * Ejection seat
 
 ## How To Install
 
-* Download the [MelonLoader](https://melonwiki.xyz/) and install in on VTOLVR.exe.
+* Download the [MelonLoader](https://melonwiki.xyz/) and install it on VTOLVR.exe.
 * Run the game once so that MelonLoader can generate all necessary things.
 * Download the [release](https://github.com/McFredward/vtol_bhaptics/releases/tag/release) and extract the files into your VTOL VR folder.
 
