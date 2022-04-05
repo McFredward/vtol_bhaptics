@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
-using MelonLoader;
+using ModLoader;
+using Bhaptics.Tact;
+using UnityEngine;
 
 namespace MyBhapticsTactsuit
 {
@@ -11,7 +13,7 @@ namespace MyBhapticsTactsuit
     {
         /* A class that contains the basic functions for the bhaptics Tactsuit, like:
          * - A Heartbeat function that can be turned on/off
-         * - A function to read in and register all .tact patterns in the bHaptics subfolder
+         * - A function to read in and register all .tact patterns in the Bhaptics.Tact subfolder
          * - A logging hook to output to the Melonloader log
          * - 
          * */
@@ -28,10 +30,13 @@ namespace MyBhapticsTactsuit
         private static ManualResetEvent RandomRumbleEngine_mrse = new ManualResetEvent(false);
         private static ManualResetEvent RandomRumbleSurface_mrse = new ManualResetEvent(false);
 
-        // dictionary of all feedback patterns found in the bHaptics directory
+        // dictionary of all feedback patterns found in the Bhaptics.Tact directory
         public Dictionary<String, FileInfo> FeedbackMap = new Dictionary<String, FileInfo>();
 
-        private static bHaptics.RotationOption defaultRotationOption = new bHaptics.RotationOption(0.0f, 0.0f);
+        //Init bHaptic API
+        public static HapticPlayer bhaptics = new HapticPlayer("7bb21f11-6675-4e25-ab78-e420a6b129c2", "VTOLVR");
+        private static RotationOption defaultRotationOption = new RotationOption(0.0f, 0.0f);
+        
 
         public void HeartBeatFunc()
         {
@@ -39,7 +44,7 @@ namespace MyBhapticsTactsuit
             {
                 // Check if reset event is active
                 HeartBeat_mrse.WaitOne();
-                bHaptics.SubmitRegistered("HeartBeat");
+                bhaptics.SubmitRegistered("HeartBeat");
                 Thread.Sleep(heartbeat_pause);
             }
         }
@@ -55,21 +60,21 @@ namespace MyBhapticsTactsuit
             }
         }
 
-        public void RandomRumbleFunc(ref ManualResetEvent mrse,ref float intensity, bHaptics.PositionType position)
+        public void RandomRumbleFunc(ref ManualResetEvent mrse,ref float intensity, Bhaptics.Tact.PositionType position)
         {
             while (true)
             {
                 // Check if reset event is active
                 mrse.WaitOne();
-                Random rnd = new Random();
+                System.Random rnd = new System.Random();
                 byte[] arr = new byte[20];
                 rnd.NextBytes(arr);
                 ElementWiseMultiply(arr, intensity);
                 if(Thread.CurrentThread.ManagedThreadId == 1)
                 {
-                    LOG("arr: " + String.Join(" ",arr));
+                    Debug.Log("arr: " + String.Join(" ",arr));
                 }
-                bHaptics.Submit("Bytes", position, arr,50);
+                bhaptics.Submit("Bytes", position, arr,50);
                 Thread.Sleep(50);
             }
         }
@@ -100,36 +105,24 @@ namespace MyBhapticsTactsuit
 
         public TactsuitVR()
         {
-            LOG("Initializing suit");
-            if (!bHaptics.WasError)
-            {
-                suitDisabled = false;
-            }
+            Debug.Log("Initializing suit");
             RegisterAllTactFiles();
-            LOG("Starting HeartBeat thread...");
+            Debug.Log("Starting HeartBeat thread...");
             Thread HeartBeatThread = new Thread(HeartBeatFunc);
             HeartBeatThread.Start();
-            LOG("Starting RandomRumbleEngine thread...");
-            Thread RandomRumbleEngineThread = new Thread(() => RandomRumbleFunc(ref RandomRumbleEngine_mrse,ref random_rumble_engine_intensity, bHaptics.PositionType.VestBack));
+            Debug.Log("Starting RandomRumbleEngine thread...");
+            Thread RandomRumbleEngineThread = new Thread(() => RandomRumbleFunc(ref RandomRumbleEngine_mrse,ref random_rumble_engine_intensity, Bhaptics.Tact.PositionType.VestBack));
             RandomRumbleEngineThread.Start();
-            LOG("Starting RandomRumbleSurface thread...");
-            Thread RandomRumbleSurfaceThread = new Thread(() => RandomRumbleFunc(ref RandomRumbleSurface_mrse, ref random_rumble_surface_intensity, bHaptics.PositionType.All));
+            Debug.Log("Starting RandomRumbleSurface thread...");
+            Thread RandomRumbleSurfaceThread = new Thread(() => RandomRumbleFunc(ref RandomRumbleSurface_mrse, ref random_rumble_surface_intensity, Bhaptics.Tact.PositionType.All));
             RandomRumbleSurfaceThread.Start();
         }
-
-        public void LOG(string logStr)
-        {
-#pragma warning disable CS0618 // remove warning that the logger is deprecated
-            MelonLogger.Msg(logStr);
-#pragma warning restore CS0618
-        }
-
 
 
         void RegisterAllTactFiles()
         {
-            // Get location of the compiled assembly and search through "bHaptics" directory and contained patterns
-            string configPath = Directory.GetCurrentDirectory() + "\\Mods\\bHaptics";
+            // Get location of the compiled assembly and search through "Bhaptics.Tact" directory and contained patterns
+            string configPath = Directory.GetCurrentDirectory() + "\\VTOLVR_ModLoader\\mods\\vtol_bhaptics\\bHaptics";
             DirectoryInfo d = new DirectoryInfo(configPath);
             FileInfo[] Files = d.GetFiles("*.tact", SearchOption.AllDirectories);
             for (int i = 0; i < Files.Length; i++)
@@ -137,16 +130,18 @@ namespace MyBhapticsTactsuit
                 string filename = Files[i].Name;
                 string fullName = Files[i].FullName;
                 string prefix = Path.GetFileNameWithoutExtension(filename);
-                // LOG("Trying to register: " + prefix + " " + fullName);
+                Debug.Log("Trying to register: " + prefix + " " + fullName);
                 if (filename == "." || filename == "..")
                     continue;
                 string tactFileStr = File.ReadAllText(fullName);
                 try
                 {
-                    bHaptics.RegisterFeedbackFromTactFile(prefix, tactFileStr);
-                    LOG("Pattern registered: " + prefix);
+                    bhaptics.RegisterTactFileStr(prefix, tactFileStr);
+                    Debug.Log("Pattern registered: " + prefix);
                 }
-                catch (Exception e) { LOG(e.ToString()); }
+                catch (Exception e) { 
+                    Debug.Log(e.ToString());
+                                    }
 
                 FeedbackMap.Add(prefix, Files[i]);
             }
@@ -155,29 +150,20 @@ namespace MyBhapticsTactsuit
 
         public void PlaybackHaptics(String key, float intensity = 1.0f, float duration = 1.0f)
         {
-            //LOG("Trying to play");
+            Debug.Log("Trying to play");
             if (FeedbackMap.ContainsKey(key))
             {
-                //LOG("ScaleOption");
-                bHaptics.ScaleOption scaleOption = new bHaptics.ScaleOption(intensity, duration);
-                //LOG("Submit");
-                bHaptics.SubmitRegistered(key, key, scaleOption, defaultRotationOption);
-                // LOG("Playing back: " + key);
+                Debug.Log("ScaleOption");
+                Bhaptics.Tact.ScaleOption scaleOption = new Bhaptics.Tact.ScaleOption(intensity, duration);
+                Debug.Log("Submit");
+                bhaptics.SubmitRegistered(key, scaleOption);
+                //bhaptics.SubmitRegistered(key, key, scaleOption, defaultRotationOption);
+                Debug.Log("Playing back: " + key);
             }
             else
             {
-                LOG("Feedback not registered: " + key);
+                Debug.Log("Feedback not registered: " + key);
             }
-        }
-
-        public void PlayBackHit(String key, float xzAngle, float yShift)
-        {
-            // two parameters can be given to the pattern to move it on the vest:
-            // 1. An angle in degrees [0, 360] to turn the pattern to the left
-            // 2. A shift [-0.5, 0.5] in y-direction (up and down) to move it up or down
-            bHaptics.ScaleOption scaleOption = new bHaptics.ScaleOption(1f, 1f);
-            bHaptics.RotationOption rotationOption = new bHaptics.RotationOption(xzAngle, yShift);
-            bHaptics.SubmitRegistered(key, key, scaleOption, rotationOption);
         }
 
         public void StartHeartBeat()
@@ -192,12 +178,12 @@ namespace MyBhapticsTactsuit
 
         public bool IsPlaying(String effect)
         {
-            return bHaptics.IsPlaying(effect);
+            return bhaptics.IsPlaying(effect);
         }
 
         public void StopHapticFeedback(String effect)
         {
-            bHaptics.TurnOff(effect);
+            bhaptics.TurnOff(effect);
         }
 
         public void StopAllHapticFeedback()
@@ -205,15 +191,15 @@ namespace MyBhapticsTactsuit
             StopThreads();
             foreach (String key in FeedbackMap.Keys)
             {
-                bHaptics.TurnOff(key);
+                bhaptics.TurnOff(key);
             }
         }
 
         public void StopThreads()
         {
-            // Yes, looks silly here, but if you have several threads like this, this is
-            // very useful when the player dies or starts a new level
             StopHeartBeat();
+            StopRandomRumbleEngine();
+            StopRandomRumbleSurface();
         }
 
 

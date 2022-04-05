@@ -1,24 +1,52 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Reflection;
 
-using MelonLoader;
-using HarmonyLib;
+using ModLoader;
+using Harmony;
 using UnityEngine;
 using MyBhapticsTactsuit;
 
 namespace vtol_bhaptics
 {
-    public class vtol_bhaptics : MelonMod
+    public class Main : VTOLMOD
     {
         public static TactsuitVR tactsuitVr;
+        private static HarmonyInstance instance = HarmonyInstance.Create("vtol.bhaptics");
 
-        public override void OnApplicationStart()
+
+        public override void ModLoaded()
         {
-            base.OnApplicationStart();
+            VTOLAPI.SceneLoaded += SceneLoaded;
+            base.ModLoaded();
+            instance.PatchAll(Assembly.GetExecutingAssembly());
+            Debug.Log("TEST1");
             tactsuitVr = new TactsuitVR();
             tactsuitVr.PlaybackHaptics("HeartBeat");
+            Debug.Log("TEST2");
+        }
+
+        void Update()
+        {
+        }
+
+        void FixedUpdate()
+        {
+        }
+
+        private void SceneLoaded(VTOLScenes scene)
+        {
+            switch (scene)
+            {
+                case VTOLScenes.ReadyRoom:
+                    //Add your ready room code here
+                    break;
+                case VTOLScenes.LoadingScene:
+                    //Add your loading scene code here
+                    break;
+            }
         }
 
         //----Constant vibrations based on different values-----
@@ -33,9 +61,11 @@ namespace vtol_bhaptics
             public static void Postfix(VehicleMaster __instance)
             {
                 //-Constant Vibrations on all devices based on the current speed ON THE GROUND-
+                Debug.Log(__instance.engines[1].finalThrust.ToString());
+
                 if (__instance.flightInfo.isLanded && __instance.flightInfo.surfaceSpeed > 5) //plain is on the ground
                 {
-                    if(!tactsuitVr.random_rumble_surface_active)
+                    if (!tactsuitVr.random_rumble_surface_active)
                     {
                         tactsuitVr.StopRandomRumbleEngine();
                         tactsuitVr.StartRandomRumbleSurface();
@@ -48,7 +78,7 @@ namespace vtol_bhaptics
                 {
                     surface_speed = 0.0F;
                     tactsuitVr.StopRandomRumbleSurface();
-                    tactsuitVr.random_rumble_surface_active=false;
+                    tactsuitVr.random_rumble_surface_active = false;
                 }
 
                 //-Constant vibrations on the back of the vest based on the current thrust-
@@ -61,7 +91,7 @@ namespace vtol_bhaptics
                     }
                     current_thrust = __instance.engines[0].finalThrust;
                 }
-                else if(__instance.engines.Length > 1 && !tactsuitVr.random_rumble_surface_active)
+                else if (__instance.engines.Length > 1 && !tactsuitVr.random_rumble_surface_active)
                 {
                     if (__instance.engines[1].startedUp)
                     {
@@ -77,7 +107,7 @@ namespace vtol_bhaptics
                         if (tactsuitVr.random_rumble_engine_active)
                         {
                             tactsuitVr.StopRandomRumbleEngine();
-                            tactsuitVr.random_rumble_engine_active=false;
+                            tactsuitVr.random_rumble_engine_active = false;
                         }
                     }
                 }
@@ -92,8 +122,8 @@ namespace vtol_bhaptics
                 //Based on the current thrust, the vibrations-itensity differs
                 //tactsuitVr.LOG("current thrust: " + current_thrust.ToString());
                 //tactsuitVr.LOG("surface speed: " + __instance.flightInfo.surfaceSpeed.ToString());
-                tactsuitVr.random_rumble_engine_intensity = current_thrust/1000;
-                tactsuitVr.random_rumble_surface_intensity = surface_speed/255;
+                tactsuitVr.random_rumble_engine_intensity = current_thrust / 1000;
+                tactsuitVr.random_rumble_surface_intensity = surface_speed / 255;
             }
         }
 
@@ -120,18 +150,18 @@ namespace vtol_bhaptics
             [HarmonyPostfix]
             public static void Postfix(OverGWarning __instance)
             {
-                if(__instance.flightInfo.playerGs > (double) __instance.maxG)
+                if (__instance.flightInfo.playerGs > (double)__instance.maxG)
                 {
                     double distance = __instance.flightInfo.playerGs - (double)__instance.maxG;
-                    if(distance > 0 && distance < 10)
+                    if (distance > 0 && distance < 10)
                     {
                         tactsuitVr.heartbeat_pause = 1000;
                     }
-                    else if(distance > 10 && distance < 25)
+                    else if (distance > 10 && distance < 25)
                     {
                         tactsuitVr.heartbeat_pause = 800;
                     }
-                    else if(distance > 25)
+                    else if (distance > 25)
                     {
                         tactsuitVr.heartbeat_pause = 500;
                     }
@@ -157,8 +187,8 @@ namespace vtol_bhaptics
             }
         }
 
-        //----Damage from Missíles------
-        [HarmonyPatch(typeof(VTOLCollisionEffects), "Health_OnDamage", new Type[] {typeof(float), typeof(Vector3), typeof(Health.DamageTypes) })]
+        //----Damage from Miss�les------
+        [HarmonyPatch(typeof(VTOLCollisionEffects), "Health_OnDamage", new Type[] { typeof(float), typeof(Vector3), typeof(Health.DamageTypes) })]
         public class bhaptics_missiles
         {
             [HarmonyPostfix]
