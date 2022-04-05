@@ -1,6 +1,10 @@
 # vtol_bhaptics - A bhaptics integration mod into VTOL VR
 ## Features
 
+```diff
+- This branch is deprecated and not used anymore. The project changed the ModLoader from MelonLoader to the native VTOL Mod Loader.
+```
+
 * Thrust of your vehicle
 * Ground acceleration and landing
 * Collisions with other objects or missiles
