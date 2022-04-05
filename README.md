@@ -11,7 +11,7 @@
 ## How To Install
 
 * Download the [VTOL Modloader](https://vtolvr-mods.com/) run it and download the necessary files.
-* Download the [release](https://github.com/McFredward/vtol_bhaptics/releases/tag/nativeModLoaderRelease) and extract the ``vtol_bhaptics`` folder into the ``\VTOL VR\VTOLVR_ModLoader\mods`` folder.
+* Download the [release](https://vtolvr-mods.com/mod/ywnjety7/) and extract into ``\VTOL VR\VTOLVR_ModLoader\mods\Bhaptics integration`` folder (create that folder).
 * Activate the mod through the Mod-Menu ingame.
 
 ## Known Issues
