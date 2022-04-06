@@ -24,18 +24,21 @@ namespace MyBhapticsTactsuit
         public int heartbeat_pause = 1000; //ms
         public bool random_rumble_engine_active = false;
         public bool random_rumble_surface_active = false;
+        public bool misc_active = false;
+        public int misc_function_no = -1;
 
         // Events to start and stop threads
         private static ManualResetEvent HeartBeat_mrse = new ManualResetEvent(false);
         private static ManualResetEvent RandomRumbleEngine_mrse = new ManualResetEvent(false);
         private static ManualResetEvent RandomRumbleSurface_mrse = new ManualResetEvent(false);
+        private static ManualResetEvent Misc_mrse = new ManualResetEvent(false);
 
         // dictionary of all feedback patterns found in the Bhaptics.Tact directory
         public Dictionary<String, FileInfo> FeedbackMap = new Dictionary<String, FileInfo>();
 
         //Init bHaptic API
         public static HapticPlayer bhaptics = new HapticPlayer("7bb21f11-6675-4e25-ab78-e420a6b129c2", "VTOLVR");
-        private static RotationOption defaultRotationOption = new RotationOption(0.0f, 0.0f);
+        //private static RotationOption defaultRotationOption = new RotationOption(0.0f, 0.0f);
         
 
         public void HeartBeatFunc()
@@ -79,6 +82,20 @@ namespace MyBhapticsTactsuit
             }
         }
 
+        //MiscThread is doing some small tasks, which are not meant to be played in parallel
+        //misc_function_no decides what task to do
+        //misc_function_no = 0 -> Stall Warning
+        public void MiscFunc(ref int _misc_function_no)
+        {
+            Misc_mrse.WaitOne();
+            if(_misc_function_no == 0) //Stall Warning
+            {
+                PlaybackHaptics("Stall1");
+                PlaybackHaptics("Stall2");
+                Thread.Sleep(50);
+            }
+        }
+
         public void StartRandomRumbleEngine()
         {
             RandomRumbleEngine_mrse.Set();
@@ -103,6 +120,18 @@ namespace MyBhapticsTactsuit
             random_rumble_surface_active = false;
         }
 
+        public void StartMisc()
+        {
+            Misc_mrse.Set();
+            misc_active = true;
+        }
+
+        public void StopMisc()
+        {
+            Misc_mrse.Reset();
+            misc_active = false;
+        }
+
         public TactsuitVR()
         {
             Debug.Log("Initializing suit");
@@ -116,6 +145,10 @@ namespace MyBhapticsTactsuit
             Debug.Log("Starting RandomRumbleSurface thread...");
             Thread RandomRumbleSurfaceThread = new Thread(() => RandomRumbleFunc(ref RandomRumbleSurface_mrse, ref random_rumble_surface_intensity, Bhaptics.Tact.PositionType.All));
             RandomRumbleSurfaceThread.Start();
+            Debug.Log("Starting Misc thread...");
+            Thread MiscThread = new Thread(() => MiscFunc(ref misc_function_no));
+            //Dont use the Misc Thread at the moment
+            //MiscThread.Start();
         }
 
 

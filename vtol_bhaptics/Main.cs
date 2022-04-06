@@ -8,6 +8,7 @@ using ModLoader;
 using Harmony;
 using UnityEngine;
 using MyBhapticsTactsuit;
+using VTOLVR.DLC.Rotorcraft;
 
 namespace vtol_bhaptics
 {
@@ -22,10 +23,8 @@ namespace vtol_bhaptics
             VTOLAPI.SceneLoaded += SceneLoaded;
             base.ModLoaded();
             instance.PatchAll(Assembly.GetExecutingAssembly());
-            Debug.Log("TEST1");
             tactsuitVr = new TactsuitVR();
             tactsuitVr.PlaybackHaptics("HeartBeat");
-            Debug.Log("TEST2");
         }
 
         void Update()
@@ -56,13 +55,14 @@ namespace vtol_bhaptics
         {
             private static float current_thrust = 0.0F; //in range [0,255]
             private static float surface_speed = 0.0F;
+            private static bool is_landed_saved = false; //To check if the vehicle hits the ground
 
             [HarmonyPostfix]
             public static void Postfix(VehicleMaster __instance)
             {
                 //-Constant Vibrations on all devices based on the current speed ON THE GROUND-
-                Debug.Log(__instance.engines[1].finalThrust.ToString());
-
+                //Debug.Log(__instance.engines[1].finalThrust.ToString());
+                
                 if (__instance.flightInfo.isLanded && __instance.flightInfo.surfaceSpeed > 5) //plain is on the ground
                 {
                     if (!tactsuitVr.random_rumble_surface_active)
@@ -119,11 +119,49 @@ namespace vtol_bhaptics
                     tactsuitVr.StopHeartBeat();
                 }
 
+                //----Short landing shock after hitting the ground----
+                if(!is_landed_saved && __instance.flightInfo.isLanded) //From flase to true indicates collision
+                {
+                    float verticalSpeed = __instance.flightInfo.verticalSpeed;
+                    //hardest collision I got was around -12
+                    //Debug.Log("vertical hit speed: " + verticalSpeed.ToString());
+                    float intensity = Math.Min(1.0F, Math.Max(0.0F, -verticalSpeed / 5));
+                    //Debug.Log("intensity: " + intensity.ToString());
+                    if(-verticalSpeed > 0.5)
+                    {
+                        tactsuitVr.PlaybackHaptics("Shock", intensity);
+                    }
+                }
+
                 //Based on the current thrust, the vibrations-itensity differs
                 //tactsuitVr.LOG("current thrust: " + current_thrust.ToString());
                 //tactsuitVr.LOG("surface speed: " + __instance.flightInfo.surfaceSpeed.ToString());
                 tactsuitVr.random_rumble_engine_intensity = current_thrust / 1000;
                 tactsuitVr.random_rumble_surface_intensity = surface_speed / 255;
+
+                //--- Helicopter DLC----
+
+                if (__instance.isHelicopter) //Add a bit vibrations based on the rotationVelocity
+                {
+                   try
+                    {
+                        var t = Traverse.Create(__instance.mainRotor);
+                        float rotationVelocity = (float)t.Field("rotationVelocity").GetValue(); //Get value of an protected value
+                        //Debug.Log("rotationVelocity: " + rotationVelocity.ToString());
+                        tactsuitVr.random_rumble_engine_intensity += rotationVelocity / 55000;
+                        float dragTorque = __instance.mainRotor.GetDragTorque();
+                        //Debug.Log("dragTorque: " + dragTorque.ToString());
+                        tactsuitVr.random_rumble_engine_intensity += dragTorque / 450000;
+                        //Debug.Log("rumble_intensty = " + tactsuitVr.random_rumble_engine_intensity.ToString());
+                    }
+                    catch (Exception e)
+                    {
+                        //Debug.Log("DLC FAILURE: " + e.Message);
+                    }
+                }
+
+
+                is_landed_saved = __instance.flightInfo.isLanded;
             }
         }
 
@@ -138,7 +176,7 @@ namespace vtol_bhaptics
                 //TODO: set up the intesity based on the magnitude (what is the max maginitude?)
                 //double magnitude = (double) col.impulse.magnitude; 
                 //tactsuitVr.LOG(magnitude.ToString());
-                //tactsuitVr.LOG(string.Format("({0} collided with {1})", (object)col.contacts[0].thisCollider.gameObject.name, (object)col.contacts[0].otherCollider.gameObject.name));
+                //Debug.Log(string.Format("({0} collided with {1})", (object)col.contacts[0].thisCollider.gameObject.name, (object)col.contacts[0].otherCollider.gameObject.name));
                 tactsuitVr.PlaybackHaptics("Collision");
             }
         }
@@ -214,5 +252,41 @@ namespace vtol_bhaptics
                 catch (Exception e) { };
             }
         }
+
+        /**
+        //-----Stall------
+        [HarmonyPatch(typeof(HUDStallWarning), "WarningRoutine", new Type[] { })]
+        public class bhaptics_stall
+        {
+            [HarmonyPrefix]
+            public static bool Prefix(HUDStallWarning __instance)
+            {
+                Debug.Log("WanringRoutine.enabled = " + __instance.enabled.ToString());
+                if (__instance.enabled)
+                {
+                    if (tactsuitVr.misc_function_no != 0)
+                    {
+                        tactsuitVr.misc_function_no = 0;
+                    }
+                    if (!tactsuitVr.misc_active)
+                    {
+                        tactsuitVr.StartMisc();
+                        Debug.Log("StartedMiscThread");
+                    }
+                }
+                return true; //Tells Harmony to keep going in the original function
+            }
+
+            [HarmonyPostfix]
+            public static void Postfix(HUDStallWarning __instance)
+            {
+                if (tactsuitVr.misc_active)
+                {
+                    tactsuitVr.StopMisc();
+                    Debug.Log("StoppedMiscThread");
+                }
+            }
+        }
+        **/
     }
 }
