@@ -8,14 +8,13 @@
 * Carrier Hook
 * Ejection seat
 
+All tested on game version 1.4.0 and X40 Tactsuit.
+
 ## How To Install
 
 * Download the [VTOL Modloader](https://vtolvr-mods.com/) run it and download the necessary files.
 * Download the [release](https://vtolvr-mods.com/mod/ywnjety7/) and extract into ``\VTOL VR\VTOLVR_ModLoader\mods\Bhaptics_integration`` folder (create that folder).
 * Activate the mod through the Mod-Menu ingame.
-
-## Known Issues
-* DLC is currently not supported. Collisions are working but thrust works different for the helicopter. I will add this in the near future. All tested on game version 1.4.0 and X40 Tactsuit.
 
 ## Credits
 Thanks to [Florian Fahrenberger](https://github.com/floh-bhaptics) for his templates and his help!
