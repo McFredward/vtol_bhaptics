@@ -8,7 +8,7 @@ using ModLoader;
 using Harmony;
 using UnityEngine;
 using MyBhapticsTactsuit;
-using VTOLVR.DLC.Rotorcraft;
+using VTOLVR.Multiplayer;
 
 namespace vtol_bhaptics
 {
@@ -16,6 +16,9 @@ namespace vtol_bhaptics
     {
         public static TactsuitVR tactsuitVr;
         private static HarmonyInstance instance = HarmonyInstance.Create("vtol.bhaptics");
+        //If the player exits one scene the Update function still fires a time causes to Thread to start again
+        //this boolean should prohibit that
+        private static bool block_thread_start = false; 
 
 
         public override void ModLoaded()
@@ -37,14 +40,12 @@ namespace vtol_bhaptics
 
         private void SceneLoaded(VTOLScenes scene)
         {
-            switch (scene)
+            //Debug.Log("SceneLoaded Method reached!");
+            //Debug.Log(scene.ToString());
+            //If every scene others than the ReadyRoom is loaded
+            if (!scene.Equals(VTOLScenes.ReadyRoom))
             {
-                case VTOLScenes.ReadyRoom:
-                    //Add your ready room code here
-                    break;
-                case VTOLScenes.LoadingScene:
-                    //Add your loading scene code here
-                    break;
+                block_thread_start = false;
             }
         }
 
@@ -63,14 +64,12 @@ namespace vtol_bhaptics
                 //-Constant Vibrations on all devices based on the current speed ON THE GROUND-
                 //Debug.Log(__instance.engines[1].finalThrust.ToString());
                 
-                if (__instance.flightInfo.isLanded && __instance.flightInfo.surfaceSpeed > 5) //plain is on the ground
+                if (__instance.flightInfo.isLanded && __instance.flightInfo.surfaceSpeed > 5 && !block_thread_start) //plain is on the ground
                 {
                     if (!tactsuitVr.random_rumble_surface_active)
                     {
                         tactsuitVr.StopRandomRumbleEngine();
                         tactsuitVr.StartRandomRumbleSurface();
-                        tactsuitVr.random_rumble_surface_active = true;
-                        tactsuitVr.random_rumble_engine_active = false;
                     }
                     surface_speed = __instance.flightInfo.surfaceSpeed;
                 }
@@ -78,27 +77,26 @@ namespace vtol_bhaptics
                 {
                     surface_speed = 0.0F;
                     tactsuitVr.StopRandomRumbleSurface();
-                    tactsuitVr.random_rumble_surface_active = false;
                 }
 
                 //-Constant vibrations on the back of the vest based on the current thrust-
-                if (__instance.engines[0].startedUp && !tactsuitVr.random_rumble_surface_active)
+                if (__instance.engines[0].startedUp && !tactsuitVr.random_rumble_surface_active && !block_thread_start)
                 {
                     if (!tactsuitVr.random_rumble_engine_active)
                     {
+                        //Debug.Log("RandomRumble started");
                         tactsuitVr.StartRandomRumbleEngine();
-                        tactsuitVr.random_rumble_engine_active = true;
                     }
                     current_thrust = __instance.engines[0].finalThrust;
                 }
-                else if (__instance.engines.Length > 1 && !tactsuitVr.random_rumble_surface_active)
+                else if (__instance.engines.Length > 1 && !tactsuitVr.random_rumble_surface_active && !block_thread_start)
                 {
                     if (__instance.engines[1].startedUp)
                     {
                         if (!tactsuitVr.random_rumble_engine_active)
                         {
+                            //Debug.Log("RandomRumble started");
                             tactsuitVr.StartRandomRumbleEngine();
-                            tactsuitVr.random_rumble_engine_active = true;
                         }
                         current_thrust = __instance.engines[1].finalThrust;
                     }
@@ -107,23 +105,19 @@ namespace vtol_bhaptics
                         if (tactsuitVr.random_rumble_engine_active)
                         {
                             tactsuitVr.StopRandomRumbleEngine();
-                            tactsuitVr.random_rumble_engine_active = false;
                         }
                     }
                 }
                 //----If Pilot dies, pause all Threats----
                 if (__instance.pilotIsDead)
                 {
-                    tactsuitVr.StopRandomRumbleEngine();
-                    tactsuitVr.StopRandomRumbleSurface();
-                    tactsuitVr.StopHeartBeat();
+                    tactsuitVr.StopThreads();
                 }
 
                 //----Short landing shock after hitting the ground----
                 if(!is_landed_saved && __instance.flightInfo.isLanded) //From flase to true indicates collision
                 {
                     float verticalSpeed = __instance.flightInfo.verticalSpeed;
-                    //hardest collision I got was around -12
                     //Debug.Log("vertical hit speed: " + verticalSpeed.ToString());
                     float intensity = Math.Min(1.0F, Math.Max(0.0F, -verticalSpeed / 5));
                     //Debug.Log("intensity: " + intensity.ToString());
@@ -166,9 +160,42 @@ namespace vtol_bhaptics
         }
 
 
+        //---End all Threads if the mission finished---
+        [HarmonyPatch(typeof(FlightSceneManager), "ReturnToBriefingOrExitScene", new Type[] { })]
+        public class bhaptics_finish_scene
+        {
+            [HarmonyPrefix]
+            public static bool Prefix(FlightSceneManager __instance)
+            {
+                //Debug.Log("TEST: ReturnToBriefingOrExitScene");
+                tactsuitVr.StopThreads();
+                block_thread_start = true;
+                return true;
+            }
+        }
+
+        //---Need to unlock Thread Start if player spawns itself---
+        [HarmonyPatch(typeof(VTOLMPSceneManager), "Awake", new Type[] { })]
+        public class bhaptics_spawn_multiplayer
+        {
+            [HarmonyPostfix]
+            public static void Postfix(VTOLMPSceneManager __instance)
+            {
+                //Debug.Log("Action event addition");
+                __instance.OnEnterVehicle += EnterVehicleAddition;
+            }
+
+            public static void EnterVehicleAddition()
+            {
+                //Debug.Log("EnterVehicleAddition invoked!");
+                block_thread_start = false;
+            }
+        }
+
+
         //----Collisions-----
         [HarmonyPatch(typeof(VTOLCollisionEffects), "OnCollisionEnter", new Type[] { typeof(Collision) })]
-        public class bhaptcs_collision
+        public class bhaptics_collision
         {
             [HarmonyPostfix]
             public static void Postfix(Collision col)
@@ -261,6 +288,18 @@ namespace vtol_bhaptics
             [HarmonyPrefix]
             public static bool Prefix(HUDStallWarning __instance)
             {
+                Debug.Log("StallWarningRoutine entered");
+                var t = Traverse.Create(__instance);
+                bool started = (bool)t.Field("started").GetValue();
+                bool stalling = (bool)t.Field("stalling").GetValue();
+                bool enabled = __instance.enabled;
+                Debug.Log("started = " + started.ToString() + " | stalling = "+ stalling.ToString() + " | enabled = "+ enabled.ToString());
+                return true;
+            }
+            
+            [HarmonyPrefix]
+            public static bool Prefix(HUDStallWarning __instance)
+            {
                 Debug.Log("WanringRoutine.enabled = " + __instance.enabled.ToString());
                 if (__instance.enabled)
                 {
@@ -286,7 +325,7 @@ namespace vtol_bhaptics
                     Debug.Log("StoppedMiscThread");
                 }
             }
-        }
+        }   
         **/
     }
 }

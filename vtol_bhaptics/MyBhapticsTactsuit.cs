@@ -22,6 +22,7 @@ namespace MyBhapticsTactsuit
         public float random_rumble_engine_intensity = 0.0F;
         public float random_rumble_surface_intensity = 0.0F; 
         public int heartbeat_pause = 1000; //ms
+        public bool heartbeat_active = false;
         public bool random_rumble_engine_active = false;
         public bool random_rumble_surface_active = false;
         public bool misc_active = false;
@@ -73,7 +74,7 @@ namespace MyBhapticsTactsuit
                 byte[] arr = new byte[20];
                 rnd.NextBytes(arr);
                 ElementWiseMultiply(arr, intensity);
-                if(Thread.CurrentThread.ManagedThreadId == 1)
+                if(Thread.CurrentThread.ManagedThreadId == 0)
                 {
                     Debug.Log("arr: " + String.Join(" ",arr));
                 }
@@ -90,8 +91,8 @@ namespace MyBhapticsTactsuit
             Misc_mrse.WaitOne();
             if(_misc_function_no == 0) //Stall Warning
             {
-                PlaybackHaptics("Stall1");
-                PlaybackHaptics("Stall2");
+                //PlaybackHaptics("Stall1");
+                //PlaybackHaptics("Stall2");
                 Thread.Sleep(50);
             }
         }
@@ -202,11 +203,13 @@ namespace MyBhapticsTactsuit
         public void StartHeartBeat()
         {
             HeartBeat_mrse.Set();
+            heartbeat_active = true;
         }
 
         public void StopHeartBeat()
         {
             HeartBeat_mrse.Reset();
+            heartbeat_active = false;
         }
 
         public bool IsPlaying(String effect)
@@ -230,9 +233,19 @@ namespace MyBhapticsTactsuit
 
         public void StopThreads()
         {
-            StopHeartBeat();
-            StopRandomRumbleEngine();
-            StopRandomRumbleSurface();
+            if (random_rumble_engine_active)
+            {
+                StopRandomRumbleEngine();
+                Debug.Log("RandomRumble stopped");
+            }
+            if (random_rumble_surface_active)
+            {
+                StopRandomRumbleSurface();
+            }
+            if (misc_active)
+            {
+                StopMisc();
+            }
         }
 
 
