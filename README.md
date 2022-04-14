@@ -1,14 +1,16 @@
-# vtol_bhaptics - A bhaptics integration mod into VTOL VR
+# vtol_bhaptics
+A bhaptics integration mod into VTOL VR
 ## Features
 
 * Thrust of your vehicle
+* DLC Helicopter based on rotation speed and drag torque
 * Ground acceleration and landing
 * Collisions with other objects or missiles
 * Hearth beat for Over-G dependend on G-Force magnitude
 * Carrier Hook
 * Ejection seat
 
-All tested on game version 1.4.0 and X40 Tactsuit.
+This mod was created mainly for the TactSuit X40, have not tested it on the X16 or with the other additional equipment (even if there are some events which activates all of them). Will try to add support for these in the future (after I bought them some day).
 
 ## How To Install
 
