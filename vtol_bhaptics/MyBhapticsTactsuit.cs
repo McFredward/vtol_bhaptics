@@ -74,10 +74,6 @@ namespace MyBhapticsTactsuit
                 byte[] arr = new byte[20];
                 rnd.NextBytes(arr);
                 ElementWiseMultiply(arr, intensity);
-                if(Thread.CurrentThread.ManagedThreadId == 0)
-                {
-                    Debug.Log("arr: " + String.Join(" ",arr));
-                }
                 bhaptics.Submit("Bytes", position, arr,50);
                 Thread.Sleep(50);
             }

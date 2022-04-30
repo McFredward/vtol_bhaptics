@@ -57,6 +57,8 @@ namespace vtol_bhaptics
             private static float current_thrust = 0.0F; //in range [0,255]
             private static float surface_speed = 0.0F;
             private static bool is_landed_saved = false; //To check if the vehicle hits the ground
+            private static bool gun_fired = false;
+            private static int holding_counter = 0; //For a specifc delay for the gun
 
             [HarmonyPostfix]
             public static void Postfix(VehicleMaster __instance)
@@ -73,14 +75,14 @@ namespace vtol_bhaptics
                     }
                     surface_speed = __instance.flightInfo.surfaceSpeed;
                 }
-                else
+                else if(!gun_fired)
                 {
                     surface_speed = 0.0F;
                     tactsuitVr.StopRandomRumbleSurface();
                 }
 
                 //-Constant vibrations on the back of the vest based on the current thrust-
-                if (__instance.engines[0].startedUp && !tactsuitVr.random_rumble_surface_active && !block_thread_start)
+                if (__instance.engines[0].startedUp && !tactsuitVr.random_rumble_surface_active && !block_thread_start && !gun_fired)
                 {
                     if (!tactsuitVr.random_rumble_engine_active)
                     {
@@ -89,7 +91,7 @@ namespace vtol_bhaptics
                     }
                     current_thrust = __instance.engines[0].finalThrust;
                 }
-                else if (__instance.engines.Length > 1 && !tactsuitVr.random_rumble_surface_active && !block_thread_start)
+                else if (__instance.engines.Length > 1 && !tactsuitVr.random_rumble_surface_active && !block_thread_start && !gun_fired)
                 {
                     if (__instance.engines[1].startedUp)
                     {
@@ -114,8 +116,46 @@ namespace vtol_bhaptics
                     tactsuitVr.StopThreads();
                 }
 
+                //------Cannon firing-------
+                WeaponManager weaponManager = __instance.actor.weaponManager;
+                HPEquippable currentWeapon = weaponManager.currentEquip;
+                //Debug.Log("weaponType = " + currentWeapon.weaponType.ToString());
+                //Debug.Log((currentWeapon.weaponType == HPEquippable.WeaponTypes.Gun).ToString());
+                //Debug.Log("isFiring = " + weaponManager.isFiring);
+                try
+                {
+                    if (currentWeapon.weaponType == HPEquippable.WeaponTypes.Gun)
+                    {
+                        //Debug.Log("getCount() =" + currentWeapon.GetCount());
+                        if (weaponManager.isUserTriggerHeld && currentWeapon.GetCount() > 0)
+                        {
+                            holding_counter++;
+                            if (!tactsuitVr.random_rumble_surface_active && holding_counter > 12)
+                            {
+                                //Debug.Log("Gun rumble started!");
+                                //Use (whole body) RandomRumbleSurface with lower intensity to simulato vibrations from the minigun
+                                tactsuitVr.random_rumble_surface_intensity = 0.35F;
+                                tactsuitVr.StopRandomRumbleEngine(); //Important, otherwise race conditions could lead to errors
+                                tactsuitVr.StartRandomRumbleSurface();
+                                gun_fired = true;
+                            }
+                        }
+                        else
+                        {
+                            holding_counter = 0;
+                            if (tactsuitVr.random_rumble_surface_active && gun_fired && (!weaponManager.isUserTriggerHeld || currentWeapon.GetCount() == 0))
+                            {
+                                //Debug.Log("Gun rumble stopped");
+                                tactsuitVr.StopRandomRumbleSurface();
+                                gun_fired = false;
+                            }
+                        }
+                    }
+                }
+                catch { }
+
                 //----Short landing shock after hitting the ground----
-                if(!is_landed_saved && __instance.flightInfo.isLanded) //From flase to true indicates collision
+                if (!is_landed_saved && __instance.flightInfo.isLanded) //From flase to true indicates collision
                 {
                     float verticalSpeed = __instance.flightInfo.verticalSpeed;
                     //Debug.Log("vertical hit speed: " + verticalSpeed.ToString());
@@ -131,7 +171,10 @@ namespace vtol_bhaptics
                 //tactsuitVr.LOG("current thrust: " + current_thrust.ToString());
                 //tactsuitVr.LOG("surface speed: " + __instance.flightInfo.surfaceSpeed.ToString());
                 tactsuitVr.random_rumble_engine_intensity = current_thrust / 1000;
-                tactsuitVr.random_rumble_surface_intensity = surface_speed / 255;
+                if (!gun_fired)
+                {
+                    tactsuitVr.random_rumble_surface_intensity = surface_speed / 255;
+                }
 
                 //--- Helicopter DLC----
 
@@ -170,6 +213,18 @@ namespace vtol_bhaptics
                 //Debug.Log("TEST: ReturnToBriefingOrExitScene");
                 tactsuitVr.StopThreads();
                 block_thread_start = true;
+                return true;
+            }
+        }
+
+        //---Reactivate threads if scene gets reloaded---
+        [HarmonyPatch(typeof(FlightSceneManager), "ReloadScene", new Type[] { })]
+        public class bhaptics_restart_scene
+        {
+            [HarmonyPrefix]
+            public static bool Prefix(FlightSceneManager __instance)
+            {
+                block_thread_start = false;
                 return true;
             }
         }
@@ -248,7 +303,7 @@ namespace vtol_bhaptics
                 tactsuitVr.PlaybackHaptics("Eject");
                 tactsuitVr.StopRandomRumbleEngine();
                 tactsuitVr.StopRandomRumbleSurface();
-                tactsuitVr.StopHeartBeat();
+                block_thread_start = true;
             }
         }
 
