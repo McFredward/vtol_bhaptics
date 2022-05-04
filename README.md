@@ -6,7 +6,8 @@ A bhaptics integration mod into VTOL VR
 * DLC Helicopter based on rotation speed and drag torque
 * Ground acceleration and landing
 * Collisions with other objects or missiles
-* Hearth beat for Over-G dependend on G-Force magnitude
+* Heart beat for Over-G dependend on G-Force magnitude
+* Cannon
 * Carrier Hook
 * Ejection seat
 
@@ -15,7 +16,7 @@ This mod was created mainly for the TactSuit X40, have not tested it on the X16 
 ## How To Install
 
 * Download the [VTOL Modloader](https://vtolvr-mods.com/) run it and download the necessary files.
-* Download the [release](https://vtolvr-mods.com/mod/ywnjety7/) and extract it into ``\VTOL VR\VTOLVR_ModLoader\mods\Bhaptics_integration`` (create that folder). Alternatively you can use the *One-Click-Install* of the Mod-Loader.
+* Download the [release](https://vtolvr-mods.com/mod/ywnjety7/) and extract it into ``\VTOL VR\VTOLVR_ModLoader\mods\Bhaptics_integration`` (create that folder). You could also use the *One-Click-Install* of the Mod-Loader as an alternative.
 * Activate the mod through the Mod-Menu ingame or through the Mod-Loader.
 
 ## Credits
