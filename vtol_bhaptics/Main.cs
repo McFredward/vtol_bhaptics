@@ -217,6 +217,27 @@ namespace vtol_bhaptics
             }
         }
 
+        //---End all Threads if Player is dead or Vehicle is destroyed---
+        [HarmonyPatch(typeof(Actor), "H_OnDeath", new Type[] { })]
+        public class bhaptics_player_dead
+        {
+            [HarmonyPrefix]
+            public static bool Prefix(Actor __instance)
+            {
+                try //isPlayer is making trouble if it is false, idk why
+                {
+                    if (__instance.isPlayer)
+                    {
+                        tactsuitVr.StopRandomRumbleEngine();
+                        tactsuitVr.StopRandomRumbleSurface();
+                        block_thread_start = true;
+                    }
+                }
+                catch { }
+                return true;
+            }
+        }
+
         //---Reactivate threads if scene gets reloaded---
         [HarmonyPatch(typeof(FlightSceneManager), "ReloadScene", new Type[] { })]
         public class bhaptics_restart_scene
