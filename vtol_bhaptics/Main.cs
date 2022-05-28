@@ -18,7 +18,8 @@ namespace vtol_bhaptics
         private static HarmonyInstance instance = HarmonyInstance.Create("vtol.bhaptics");
         //If the player exits one scene the Update function still fires a time causes to Thread to start again
         //this boolean should prohibit that
-        private static bool block_thread_start = false; 
+        private static bool block_thread_start = false;
+        private static bool gun_fired = false;
 
 
         public override void ModLoaded()
@@ -57,7 +58,6 @@ namespace vtol_bhaptics
             private static float current_thrust = 0.0F; //in range [0,255]
             private static float surface_speed = 0.0F;
             private static bool is_landed_saved = false; //To check if the vehicle hits the ground
-            private static bool gun_fired = false;
             private static int holding_counter = 0; //For a specifc delay for the gun
 
             [HarmonyPostfix]
@@ -231,6 +231,7 @@ namespace vtol_bhaptics
                         tactsuitVr.StopRandomRumbleEngine();
                         tactsuitVr.StopRandomRumbleSurface();
                         block_thread_start = true;
+                        gun_fired = false; //Fixes bug if the player dies, while shooting
                     }
                 }
                 catch { }
