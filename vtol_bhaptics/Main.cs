@@ -5,30 +5,40 @@ using System.Text;
 using System.Reflection;
 
 using ModLoader;
-using Harmony;
+using HarmonyLib;
+using ModLoader.Framework;
+using ModLoader.Framework.Attributes;
 using UnityEngine;
 using MyBhapticsTactsuit;
 using VTOLVR.Multiplayer;
+using VTOLAPI;
 
 namespace vtol_bhaptics
-{
-    public class Main : VTOLMOD
+{ 
+    [ItemId("McFredward.BHaptics")]
+    public class Main : VtolMod
     {
         public static TactsuitVR tactsuitVr;
-        private static HarmonyInstance instance = HarmonyInstance.Create("vtol.bhaptics");
         //If the player exits one scene the Update function still fires a time causes to Thread to start again
         //this boolean should prohibit that
         private static bool block_thread_start = false;
         private static bool gun_fired = false;
 
-
-        public override void ModLoaded()
+        private void Awake()
         {
-            VTOLAPI.SceneLoaded += SceneLoaded;
-            base.ModLoaded();
-            instance.PatchAll(Assembly.GetExecutingAssembly());
+            VTAPI.SceneLoaded += SceneLoaded;
             tactsuitVr = new TactsuitVR();
             tactsuitVr.PlaybackHaptics("HeartBeat");
+        }
+        
+        public override void UnLoad()
+        {
+            VTAPI.SceneLoaded -= SceneLoaded;
+            tactsuitVr.StopThreads();
+            tactsuitVr.StopRandomRumbleEngine();
+            tactsuitVr.StopRandomRumbleSurface();
+            tactsuitVr.StopHeartBeat();
+            tactsuitVr.StopMisc();
         }
 
         void Update()
@@ -39,12 +49,12 @@ namespace vtol_bhaptics
         {
         }
 
-        private void SceneLoaded(VTOLScenes scene)
+        private void SceneLoaded(VTScenes scene)
         {
             //Debug.Log("SceneLoaded Method reached!");
             //Debug.Log(scene.ToString());
             //If every scene others than the ReadyRoom is loaded
-            if (!scene.Equals(VTOLScenes.ReadyRoom))
+            if (!scene.Equals(VTScenes.ReadyRoom))
             {
                 block_thread_start = false;
             }
@@ -329,7 +339,7 @@ namespace vtol_bhaptics
             }
         }
 
-        //----Damage from Missíles------
+        //----Damage from Missï¿½les------
         [HarmonyPatch(typeof(VTOLCollisionEffects), "Health_OnDamage", new Type[] { typeof(float), typeof(Vector3), typeof(Health.DamageTypes) })]
         public class bhaptics_missiles
         {

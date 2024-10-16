@@ -31,30 +31,38 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\VTOL VR\@Mod Loader\Managed\0Harmony.dll</HintPath>
+    </Reference>
     <Reference Include="0Harmony, Version=1.2.0.1, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Dependencies\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\Dependencies\Assembly-CSharp.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\VTOL VR\VTOLVR_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Bhaptics.Tact, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Bhaptics.Tact.dll</HintPath>
+    <Reference Include="Bhaptics.Tact">
+      <HintPath>..\Bhaptics_integration\Dependencies\Bhaptics.Tact.dll</HintPath>
     </Reference>
-    <Reference Include="ModLoader">
-      <HintPath>..\Dependencies\ModLoader.dll</HintPath>
+    <Reference Include="Mod Loader">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\VTOL VR\@Mod Loader\Managed\Mod Loader.dll</HintPath>
+    </Reference>
+    <Reference Include="ModLoader.Framework">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\VTOL VR\@Mod Loader\Managed\ModLoader.Framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="UnityEngine">
-      <HintPath>..\Dependencies\UnityEngine.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\VTOL VR\VTOLVR_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\Dependencies\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\VTOL VR\VTOLVR_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.PhysicsModule">
-      <HintPath>..\Dependencies\UnityEngine.PhysicsModule.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\VTOL VR\VTOLVR_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="VTOLAPI">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\workshop\content\3018410\3265689427\VTOLAPI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
