@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Reflection;
@@ -18,6 +19,7 @@ namespace vtol_bhaptics
     [ItemId("McFredward.BHaptics")]
     public class Main : VtolMod
     {
+        public static string ModFolder;
         public static TactsuitVR tactsuitVr;
         //If the player exits one scene the Update function still fires a time causes to Thread to start again
         //this boolean should prohibit that
@@ -26,6 +28,7 @@ namespace vtol_bhaptics
 
         private void Awake()
         {
+            ModFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             VTAPI.SceneLoaded += SceneLoaded;
             tactsuitVr = new TactsuitVR();
             tactsuitVr.PlaybackHaptics("HeartBeat");

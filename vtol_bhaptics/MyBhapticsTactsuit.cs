@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading;
-using ModLoader;
 using Bhaptics.Tact;
 using UnityEngine;
+using vtol_bhaptics;
+using Random = System.Random;
 
 namespace MyBhapticsTactsuit
 {
@@ -15,32 +15,32 @@ namespace MyBhapticsTactsuit
          * - A Heartbeat function that can be turned on/off
          * - A function to read in and register all .tact patterns in the Bhaptics.Tact subfolder
          * - A logging hook to output to the Melonloader log
-         * - 
+         * -
          * */
         public bool suitDisabled = true;
-        public bool systemInitialized = false;
-        public float random_rumble_engine_intensity = 0.0F;
-        public float random_rumble_surface_intensity = 0.0F; 
+        public bool systemInitialized;
+        public float random_rumble_engine_intensity;
+        public float random_rumble_surface_intensity;
         public int heartbeat_pause = 1000; //ms
-        public bool heartbeat_active = false;
-        public bool random_rumble_engine_active = false;
-        public bool random_rumble_surface_active = false;
-        public bool misc_active = false;
+        public bool heartbeat_active;
+        public bool random_rumble_engine_active;
+        public bool random_rumble_surface_active;
+        public bool misc_active;
         public int misc_function_no = -1;
 
         // Events to start and stop threads
-        private static ManualResetEvent HeartBeat_mrse = new ManualResetEvent(false);
+        private static readonly ManualResetEvent HeartBeat_mrse = new ManualResetEvent(false);
         private static ManualResetEvent RandomRumbleEngine_mrse = new ManualResetEvent(false);
         private static ManualResetEvent RandomRumbleSurface_mrse = new ManualResetEvent(false);
-        private static ManualResetEvent Misc_mrse = new ManualResetEvent(false);
+        private static readonly ManualResetEvent Misc_mrse = new ManualResetEvent(false);
 
         // dictionary of all feedback patterns found in the Bhaptics.Tact directory
-        public Dictionary<String, FileInfo> FeedbackMap = new Dictionary<String, FileInfo>();
+        public Dictionary<string, FileInfo> FeedbackMap = new Dictionary<string, FileInfo>();
 
         //Init bHaptic API
         public static HapticPlayer bhaptics = new HapticPlayer("7bb21f11-6675-4e25-ab78-e420a6b129c2", "VTOLVR");
         //private static RotationOption defaultRotationOption = new RotationOption(0.0f, 0.0f);
-        
+
 
         public void HeartBeatFunc()
         {
@@ -55,26 +55,26 @@ namespace MyBhapticsTactsuit
 
         public void ElementWiseMultiply(byte[] arr, float x)
         {
-            for(int i = 0; i < arr.Length; i++)
+            for (var i = 0; i < arr.Length; i++)
             {
-                byte temp = arr[i];
-                temp = (byte)(temp * ((5/255) + 0.5)); //Clip to range [0,5]
-                temp = (byte)((temp * x) + 0.5); //Change intesity based on x
+                var temp = arr[i];
+                temp = (byte)(temp * (5 / 255 + 0.5)); //Clip to range [0,5]
+                temp = (byte)(temp * x + 0.5); //Change intesity based on x
                 arr[i] = temp;
             }
         }
 
-        public void RandomRumbleFunc(ref ManualResetEvent mrse,ref float intensity, Bhaptics.Tact.PositionType position)
+        public void RandomRumbleFunc(ref ManualResetEvent mrse, ref float intensity, PositionType position)
         {
             while (true)
             {
                 // Check if reset event is active
                 mrse.WaitOne();
-                System.Random rnd = new System.Random();
-                byte[] arr = new byte[20];
+                var rnd = new Random();
+                var arr = new byte[20];
                 rnd.NextBytes(arr);
                 ElementWiseMultiply(arr, intensity);
-                bhaptics.Submit("Bytes", position, arr,50);
+                bhaptics.Submit("Bytes", position, arr, 50);
                 Thread.Sleep(50);
             }
         }
@@ -85,12 +85,10 @@ namespace MyBhapticsTactsuit
         public void MiscFunc(ref int _misc_function_no)
         {
             Misc_mrse.WaitOne();
-            if(_misc_function_no == 0) //Stall Warning
-            {
+            if (_misc_function_no == 0) //Stall Warning
                 //PlaybackHaptics("Stall1");
                 //PlaybackHaptics("Stall2");
                 Thread.Sleep(50);
-            }
         }
 
         public void StartRandomRumbleEngine()
@@ -134,57 +132,61 @@ namespace MyBhapticsTactsuit
             Debug.Log("Initializing suit");
             RegisterAllTactFiles();
             Debug.Log("Starting HeartBeat thread...");
-            Thread HeartBeatThread = new Thread(HeartBeatFunc);
+            var HeartBeatThread = new Thread(HeartBeatFunc);
             HeartBeatThread.Start();
             Debug.Log("Starting RandomRumbleEngine thread...");
-            Thread RandomRumbleEngineThread = new Thread(() => RandomRumbleFunc(ref RandomRumbleEngine_mrse,ref random_rumble_engine_intensity, Bhaptics.Tact.PositionType.VestBack));
+            var RandomRumbleEngineThread = new Thread(() => RandomRumbleFunc(ref RandomRumbleEngine_mrse,
+                ref random_rumble_engine_intensity, PositionType.VestBack));
             RandomRumbleEngineThread.Start();
             Debug.Log("Starting RandomRumbleSurface thread...");
-            Thread RandomRumbleSurfaceThread = new Thread(() => RandomRumbleFunc(ref RandomRumbleSurface_mrse, ref random_rumble_surface_intensity, Bhaptics.Tact.PositionType.All));
+            var RandomRumbleSurfaceThread = new Thread(() =>
+                RandomRumbleFunc(ref RandomRumbleSurface_mrse, ref random_rumble_surface_intensity, PositionType.All));
             RandomRumbleSurfaceThread.Start();
             Debug.Log("Starting Misc thread...");
-            Thread MiscThread = new Thread(() => MiscFunc(ref misc_function_no));
+            var MiscThread = new Thread(() => MiscFunc(ref misc_function_no));
             //Dont use the Misc Thread at the moment
             //MiscThread.Start();
         }
 
 
-        void RegisterAllTactFiles()
+        private void RegisterAllTactFiles()
         {
             // Get location of the compiled assembly and search through "Bhaptics.Tact" directory and contained patterns
-            string configPath = Directory.GetCurrentDirectory() + "\\VTOLVR_ModLoader\\mods\\Bhaptics_integration\\bHaptics";
-            DirectoryInfo d = new DirectoryInfo(configPath);
-            FileInfo[] Files = d.GetFiles("*.tact", SearchOption.AllDirectories);
-            for (int i = 0; i < Files.Length; i++)
+            var configPath = Main.ModFolder + "\\bHaptics";
+            var d = new DirectoryInfo(configPath);
+            var Files = d.GetFiles("*.tact", SearchOption.AllDirectories);
+            for (var i = 0; i < Files.Length; i++)
             {
-                string filename = Files[i].Name;
-                string fullName = Files[i].FullName;
-                string prefix = Path.GetFileNameWithoutExtension(filename);
+                var filename = Files[i].Name;
+                var fullName = Files[i].FullName;
+                var prefix = Path.GetFileNameWithoutExtension(filename);
                 Debug.Log("Trying to register: " + prefix + " " + fullName);
                 if (filename == "." || filename == "..")
                     continue;
-                string tactFileStr = File.ReadAllText(fullName);
+                var tactFileStr = File.ReadAllText(fullName);
                 try
                 {
                     bhaptics.RegisterTactFileStr(prefix, tactFileStr);
                     Debug.Log("Pattern registered: " + prefix);
                 }
-                catch (Exception e) { 
+                catch (Exception e)
+                {
                     Debug.Log(e.ToString());
-                                    }
+                }
 
                 FeedbackMap.Add(prefix, Files[i]);
             }
+
             systemInitialized = true;
         }
 
-        public void PlaybackHaptics(String key, float intensity = 1.0f, float duration = 1.0f)
+        public void PlaybackHaptics(string key, float intensity = 1.0f, float duration = 1.0f)
         {
             Debug.Log("Trying to play");
             if (FeedbackMap.ContainsKey(key))
             {
                 Debug.Log("ScaleOption");
-                Bhaptics.Tact.ScaleOption scaleOption = new Bhaptics.Tact.ScaleOption(intensity, duration);
+                var scaleOption = new ScaleOption(intensity, duration);
                 Debug.Log("Submit");
                 bhaptics.SubmitRegistered(key, scaleOption);
                 //bhaptics.SubmitRegistered(key, key, scaleOption, defaultRotationOption);
@@ -208,12 +210,12 @@ namespace MyBhapticsTactsuit
             heartbeat_active = false;
         }
 
-        public bool IsPlaying(String effect)
+        public bool IsPlaying(string effect)
         {
             return bhaptics.IsPlaying(effect);
         }
 
-        public void StopHapticFeedback(String effect)
+        public void StopHapticFeedback(string effect)
         {
             bhaptics.TurnOff(effect);
         }
@@ -221,10 +223,7 @@ namespace MyBhapticsTactsuit
         public void StopAllHapticFeedback()
         {
             StopThreads();
-            foreach (String key in FeedbackMap.Keys)
-            {
-                bhaptics.TurnOff(key);
-            }
+            foreach (var key in FeedbackMap.Keys) bhaptics.TurnOff(key);
         }
 
         public void StopThreads()
@@ -234,16 +233,9 @@ namespace MyBhapticsTactsuit
                 StopRandomRumbleEngine();
                 Debug.Log("RandomRumble stopped");
             }
-            if (random_rumble_surface_active)
-            {
-                StopRandomRumbleSurface();
-            }
-            if (misc_active)
-            {
-                StopMisc();
-            }
+
+            if (random_rumble_surface_active) StopRandomRumbleSurface();
+            if (misc_active) StopMisc();
         }
-
-
     }
 }
