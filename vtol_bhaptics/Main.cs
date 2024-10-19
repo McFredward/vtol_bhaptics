@@ -71,7 +71,8 @@ namespace vtol_bhaptics
             private static float current_thrust = 0.0F; //in range [0,255]
             private static float surface_speed = 0.0F;
             private static bool is_landed_saved = false; //To check if the vehicle hits the ground
-            private static int holding_counter = 0; //For a specifc delay for the gun
+            private static float holdingTime = 0.0f; //For a specifc delay for the gun
+            private static float holdingThreshold = 0.2f; //Amount of delay for the gun, 0.2f = 12 frames at 60 FPS
 
             [HarmonyPostfix]
             public static void Postfix(VehicleMaster __instance)
@@ -142,23 +143,23 @@ namespace vtol_bhaptics
                         //Debug.Log("getCount() =" + currentWeapon.GetCount());
                         if (weaponManager.isUserTriggerHeld && currentWeapon.GetCount() > 0)
                         {
-                            holding_counter++;
-                            if (!tactsuitVr.random_rumble_surface_active && holding_counter > 12)
+                            holdingTime += Time.deltaTime;
+                            if (!tactsuitVr.random_rumble_surface_active && holdingTime > holdingThreshold)
                             {
-                                //Debug.Log("Gun rumble started!");
-                                //Use (whole body) RandomRumbleSurface with lower intensity to simulato vibrations from the minigun
-                                tactsuitVr.random_rumble_surface_intensity = 0.35F;
-                                tactsuitVr.StopRandomRumbleEngine(); //Important, otherwise race conditions could lead to errors
+                                // Debug.Log("Gun rumble started!");
+                                // Use (whole body) RandomRumbleSurface with lower intensity to simulate vibrations from the minigun
+                                tactsuitVr.random_rumble_surface_intensity = 0.35f;
+                                tactsuitVr.StopRandomRumbleEngine(); // Important, otherwise race conditions could lead to errors
                                 tactsuitVr.StartRandomRumbleSurface();
                                 gun_fired = true;
                             }
                         }
                         else
                         {
-                            holding_counter = 0;
+                            holdingTime = 0.0f;
                             if (tactsuitVr.random_rumble_surface_active && gun_fired && (!weaponManager.isUserTriggerHeld || currentWeapon.GetCount() == 0))
                             {
-                                //Debug.Log("Gun rumble stopped");
+                                // Debug.Log("Gun rumble stopped");
                                 tactsuitVr.StopRandomRumbleSurface();
                                 gun_fired = false;
                             }
