@@ -11,15 +11,16 @@ A bhaptics integration mod into VTOL VR
 * Carrier Hook
 * Ejection seat
 
-This mod was created mainly for the TactSuit X40, have not tested it on the X16 or with the other additional equipment (even if there are some events which activates all of them). Will try to add support for these in the future (after I bought them some day).
+This mod was created mainly for the TactSuit X40.
 
 ## How To Install
 
-* Download the [VTOL Modloader](https://vtolvr-mods.com/) run it and download the necessary files.
-* Download the [release](https://vtolvr-mods.com/mod/ywnjety7/) and extract it into ``\VTOL VR\VTOLVR_ModLoader\mods\Bhaptics_integration`` (create that folder). You could also use the *One-Click-Install* of the Mod-Loader as an alternative.
+* Download the [VTOL Modloader](https://store.steampowered.com/app/3018410/VTOL_VR_Mod_Loader/) from Steam.
+* Follow the [release](https://steamcommunity.com/sharedfiles/filedetails/?id=3351510829).
 * Activate the mod through the Mod-Menu ingame or through the Mod-Loader.
 
 ## Credits
+Thanks to [Polak](https://github.com/lovhb) for the quick help with porting the mod to the new mod loader on steam!</br>
 Thanks to [Florian Fahrenberger](https://github.com/floh-bhaptics) for his templates and his help!
 Thanks to *Ketkev*, *Temperz87 | Door Gunner Guy* and *Marsh* from the VTOL modding community for their help.
 
