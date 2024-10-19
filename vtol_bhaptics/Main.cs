@@ -143,7 +143,7 @@ namespace vtol_bhaptics
                         if (weaponManager.isUserTriggerHeld && currentWeapon.GetCount() > 0)
                         {
                             holding_counter++;
-                            if (!tactsuitVr.random_rumble_surface_active && holding_counter > 12)
+                            if (!tactsuitVr.random_rumble_surface_active && holding_counter > 6)
                             {
                                 //Debug.Log("Gun rumble started!");
                                 //Use (whole body) RandomRumbleSurface with lower intensity to simulato vibrations from the minigun
