@@ -25,6 +25,7 @@ namespace vtol_bhaptics
         //this boolean should prohibit that
         private static bool block_thread_start = false;
         private static bool gun_fired = false;
+        private static bool player_dead = false;
 
         private void Awake()
         {
@@ -127,7 +128,20 @@ namespace vtol_bhaptics
                 //----If Pilot dies, pause all Threats----
                 if (__instance.pilotIsDead)
                 {
-                    tactsuitVr.StopThreads();
+                    if (!player_dead)
+                    {
+                        Debug.Log("Pilot is dead (main update thread)!");
+                        player_dead = true;
+                        tactsuitVr.StopThreads();
+                    }
+                }
+                else
+                {
+                    if (player_dead && !__instance.ejectionSeat.ejected)
+                    {
+                        Debug.Log("Pilot revived!");
+                        player_dead = false;
+                    }
                 }
 
                 //------Cannon firing-------
@@ -146,10 +160,10 @@ namespace vtol_bhaptics
                             holdingTime += Time.deltaTime;
                             if (!tactsuitVr.random_rumble_surface_active && holdingTime > holdingThreshold)
                             {
-                                // Debug.Log("Gun rumble started!");
-                                // Use (whole body) RandomRumbleSurface with lower intensity to simulate vibrations from the minigun
-                                tactsuitVr.random_rumble_surface_intensity = 0.35f;
-                                tactsuitVr.StopRandomRumbleEngine(); // Important, otherwise race conditions could lead to errors
+                                //Debug.Log("Gun rumble started!");
+                                //Use (whole body) RandomRumbleSurface with lower intensity to simulato vibrations from the minigun
+                                tactsuitVr.random_rumble_surface_intensity = 0.35F;
+                                tactsuitVr.StopRandomRumbleEngine(); //Important, otherwise race conditions could lead to errors
                                 tactsuitVr.StartRandomRumbleSurface();
                                 gun_fired = true;
                             }
@@ -224,7 +238,7 @@ namespace vtol_bhaptics
             [HarmonyPrefix]
             public static bool Prefix(FlightSceneManager __instance)
             {
-                //Debug.Log("TEST: ReturnToBriefingOrExitScene");
+                Debug.Log("Player exits the scene (ReturnToBriefingOrExitScene)");
                 tactsuitVr.StopThreads();
                 block_thread_start = true;
                 return true;
@@ -242,6 +256,7 @@ namespace vtol_bhaptics
                 {
                     if (__instance.isPlayer)
                     {
+                        Debug.Log("H_OnDeath on the player triggered.");
                         tactsuitVr.StopRandomRumbleEngine();
                         tactsuitVr.StopRandomRumbleSurface();
                         block_thread_start = true;
@@ -272,13 +287,13 @@ namespace vtol_bhaptics
             [HarmonyPostfix]
             public static void Postfix(VTOLMPSceneManager __instance)
             {
-                //Debug.Log("Action event addition");
+                Debug.Log("Action event addition");
                 __instance.OnEnterVehicle += EnterVehicleAddition;
             }
 
             public static void EnterVehicleAddition()
             {
-                //Debug.Log("EnterVehicleAddition invoked!");
+                Debug.Log("EnterVehicleAddition invoked!");
                 block_thread_start = false;
             }
         }
@@ -293,9 +308,12 @@ namespace vtol_bhaptics
             {
                 //TODO: set up the intesity based on the magnitude (what is the max maginitude?)
                 //double magnitude = (double) col.impulse.magnitude; 
-                //tactsuitVr.LOG(magnitude.ToString());
+                //tactsuitVr.LOG(magnitude.ToString());         
                 //Debug.Log(string.Format("({0} collided with {1})", (object)col.contacts[0].thisCollider.gameObject.name, (object)col.contacts[0].otherCollider.gameObject.name));
-                tactsuitVr.PlaybackHaptics("Collision");
+                if (!player_dead)
+                {
+                    tactsuitVr.PlaybackHaptics("Collision");
+                }
             }
         }
 
@@ -336,21 +354,27 @@ namespace vtol_bhaptics
             [HarmonyPostfix]
             public static void Postfix(EjectionSeat __instance)
             {
+                Debug.Log("Player ejected himself!");
                 tactsuitVr.PlaybackHaptics("Eject");
                 tactsuitVr.StopRandomRumbleEngine();
                 tactsuitVr.StopRandomRumbleSurface();
                 block_thread_start = true;
+                player_dead = true;
             }
         }
 
-        //----Damage from Miss�les------
+        //----Damage from Missiles------
         [HarmonyPatch(typeof(VTOLCollisionEffects), "Health_OnDamage", new Type[] { typeof(float), typeof(Vector3), typeof(Health.DamageTypes) })]
         public class bhaptics_missiles
         {
             [HarmonyPostfix]
             public static void Postfix(VTOLCollisionEffects __instance)
             {
-                tactsuitVr.PlaybackHaptics("Collision");
+                if (!player_dead)
+                {
+                    Debug.Log("Player got some damage!");
+                    tactsuitVr.PlaybackHaptics("Collision");
+                }
             }
         }
         //-----Carrier Catapult engage------

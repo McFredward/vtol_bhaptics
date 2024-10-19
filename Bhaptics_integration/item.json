@@ -1,0 +1,14 @@
+{
+  "Title": "Bhaptics integration",
+  "Description": "Ported Version of the Bhaptics integration mod by McFredward.",
+  "PreviewImageUrl": "https://media.vtolvr-mods.com/uploaded_mod_images/vtol_bhaptics_logo10ud6vyHqi.png",
+  "MetaData": {
+    "DllName": "vtol_bhaptics.dll",
+    "AllowLoadOnStart": true,
+    "ShowOnMainList": true,
+    "DllHash": ""
+  },
+  "DependenciesIds": [
+    3265689427
+  ]
+}
