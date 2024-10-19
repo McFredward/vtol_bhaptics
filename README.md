@@ -20,7 +20,7 @@ This mod was created mainly for the TactSuit X40.
 * Activate the mod through the Mod-Menu ingame or through the Mod-Loader.
 
 ## Credits
-Thanks to [Polak](https://github.com/lovhb) for the quick help with porting the mod to the new mod loader on steam!</br>
+Thanks to [Polak](https://github.com/lovhb) for the quick help with porting the mod to the new mod loader on steam & bug fixes!</br>
 Thanks to [Florian Fahrenberger](https://github.com/floh-bhaptics) for his templates and his help!
 Thanks to *Ketkev*, *Temperz87 | Door Gunner Guy* and *Marsh* from the VTOL modding community for their help.
 
