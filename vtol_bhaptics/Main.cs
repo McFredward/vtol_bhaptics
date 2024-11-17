@@ -137,7 +137,7 @@ namespace vtol_bhaptics
                 }
                 else
                 {
-                    if (player_dead && !__instance.ejectionSeat.ejected)
+                    if (player_dead && !__instance.HasEjected())
                     {
                         Debug.Log("Pilot revived!");
                         player_dead = false;
